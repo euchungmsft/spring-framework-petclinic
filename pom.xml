@@ -473,7 +473,7 @@
                 <!-- See https://github.com/GoogleContainerTools/jib/tree/master/jib-maven-plugin -->
                 <configuration>
                     <from>
-                        <image>jetty:11.0-jdk17</image>
+                        <image>jetty:11.0-jdk17</image> <!-- Try with openjdk:17-jre for executable Jar -->
                     </from>
                     <container>
                         <entrypoint>java,-jar,/usr/local/jetty/start.jar</entrypoint>
@@ -512,6 +512,7 @@
                     </outputPaths>                    
                 </configuration>
             </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
