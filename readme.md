@@ -14,6 +14,30 @@ The "canonical" implementation is now based on Spring Boot, Thymeleaf and [aggre
 
 [See the presentation here](http://fr.slideshare.net/AntoineRey/spring-framework-petclinic-sample-application) (2017 update)
 
+## Architecture and production readiness review
+
+### Architecture intent (inferred from repository structure)
+- Layered architecture with clear separation of concerns:
+  - Presentation: `src/main/java/.../web` and JSP/tag views in `src/main/webapp`.
+  - Service/business logic: `src/main/java/.../service` with transaction boundaries configured in `src/main/resources/spring/business-config.xml`.
+  - Repository/data access: `src/main/java/.../repository` with profile-driven implementations (`jdbc`, `jpa`, `springdatajpa`).
+- Domain model centered in `src/main/java/.../model` with XML-based Spring configuration in `src/main/resources/spring`.
+
+### Top 3 risks if containerized as-is
+1. Default H2 in-memory database resets on container restart, causing data loss and demo data reseeding.
+2. Database credentials and JDBC URLs are hard-coded in Maven profiles, making secrets management and environment-specific overrides difficult in containers.
+3. No built-in readiness/liveness endpoints or JVM/container resource tuning, which can lead to unstable behavior under orchestration (e.g., no health probes, OOM kills).
+
+### Repo-level improvements (incremental)
+- Add a documented production profile that externalizes JDBC URL, user, and password via environment variables.
+- Provide a minimal deployment checklist (DB migration, health probes, logging/metrics expectations, TLS termination).
+- Add a sample container runtime configuration (Kubernetes manifests or docker-compose) that uses secrets and persistent volumes.
+
+### Production deployment blockers
+- Using the default H2 profile (ephemeral storage) is not suitable for production; a persistent DB profile must be configured.
+- Database credentials currently default to demo values in the repository and should be injected via secrets before deployment.
+- The application ships without authentication/authorization, which is a blocker for any environment handling real user data.
+
 ## Running petclinic locally
 
 ### With Maven command line
@@ -229,7 +253,6 @@ Here is a list of them:
 The [issue tracker](/issues) is the preferred channel for bug reports, features requests and submitting pull requests.
 
 For pull requests, editor preferences are available in the [editor config](.editorconfig) for easy use in common text editors. Read more and download plugins at <http://editorconfig.org>.
-
 
 
 
